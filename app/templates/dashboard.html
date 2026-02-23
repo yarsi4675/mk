@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — MkDocs CMS{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/editor.css">
+{% endblock %}
+{% block body %}
+<div class="app-container">
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <span class="logo">📝 MkDocs CMS</span>
+      <div class="breadcrumbs" id="breadcrumbs"></div>
+    </div>
+    <div class="header-center">
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="🔍 Search articles..." autocomplete="off">
+        <div id="searchResults" class="search-dropdown" style="display:none;"></div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="user-badge">👤 {{ user.username }} <small>({{ user.role }})</small></span>
+      <button class="btn btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- MAIN 4-PANEL LAYOUT -->
+  <div class="panels-container">
+
+    <!-- PANEL 1: PROJECTS -->
+    <div class="panel panel-projects" id="panelProjects">
+      <div class="panel-header" onclick="togglePanel('panelProjects')">
+        <span>📁 Projects</span>
+        <button class="collapse-btn" id="collapseProjects">▼</button>
+      </div>
+      <div class="panel-body" id="bodyProjects">
+        <div class="panel-toolbar">
+          <button class="btn btn-sm btn-primary" onclick="showAddProject()">+ Add</button>
+        </div>
+        <div id="projectsList"></div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: MENU -->
+    <div class="panel panel-menu" id="panelMenu">
+      <div class="panel-header" onclick="togglePanel('panelMenu')">
+        <span>🗂️ Menu</span>
+        <button class="collapse-btn" id="collapseMenu">▼</button>
+      </div>
+      <div class="panel-body" id="bodyMenu">
+        <div class="panel-toolbar">
+          <button class="btn btn-sm btn-primary" onclick="showAddMenuItem()" id="addMenuBtn" disabled>+ Add</button>
+        </div>
+        <div id="menuTree"></div>
+      </div>
+    </div>
+
+    <!-- PANEL 3: ARTICLES -->
+    <div class="panel panel-articles" id="panelArticles">
+      <div class="panel-header" onclick="togglePanel('panelArticles')">
+        <span>📄 Articles</span>
+        <button class="collapse-btn" id="collapseArticles">▼</button>
+      </div>
+      <div class="panel-body" id="bodyArticles">
+        <div class="panel-toolbar">
+          <button class="btn btn-sm btn-primary" onclick="showAddArticle()" id="addArticleBtn" disabled>+ Add</button>
+        </div>
+        <div id="articlesList"></div>
+      </div>
+    </div>
+
+    <!-- PANEL 4: EDITOR -->
+    <div class="panel panel-editor" id="panelEditor">
+      <div class="panel-header" onclick="togglePanel('panelEditor')">
+        <span>✏️ Editor</span>
+        <button class="collapse-btn" id="collapseEditor">▼</button>
+      </div>
+      <div class="panel-body" id="bodyEditor">
+        <div id="editorContainer" style="display:none;">
+          <!-- Article metadata -->
+          <div class="editor-meta">
+            <div class="meta-row">
+              <input type="text" id="articleTitle" placeholder="Article Title" class="title-input">
+            </div>
+            <div class="meta-row meta-selectors">
+              <div class="selector-group">
+                <label>Icon:</label>
+                <select id="iconSelect">
+                  <option value="">None</option>
+                </select>
+                <img id="iconPreview" src="" style="display:none; width:24px; height:24px; object-fit:contain;">
+              </div>
+              <div class="selector-group">
+                <label>Prefix:</label>
+                <select id="prefixSelect">
+                  <option value="">None</option>
+                </select>
+                <button class="btn btn-xs" onclick="showAddPrefix()">+</button>
+              </div>
+              <div class="selector-group">
+                <label>Suffix:</label>
+                <select id="suffixSelect">
+                  <option value="">None</option>
+                </select>
+                <button class="btn btn-xs" onclick="showAddSuffix()">+</button>
+              </div>
+            </div>
+            <div class="meta-row">
+              <div class="title-preview" id="titlePreview"></div>
+            </div>
+            <div class="meta-row">
+              <label>Tags:</label>
+              <div id="tagChips" class="tag-chips"></div>
+              <select id="tagSelect" multiple style="display:none;"></select>
+              <button class="btn btn-xs" onclick="toggleTagSelector()">Edit Tags</button>
+            </div>
+          </div>
+
+          <!-- Editor toolbar -->
+          <div class="editor-toolbar" id="editorToolbar">
+            <select id="headingSelect" class="toolbar-select" onchange="insertHeading(this.value)">
+              <option value="">Heading</option>
+              <option value="1">H1</option>
+              <option value="2">H2</option>
+              <option value="3">H3</option>
+              <option value="4">H4</option>
+              <option value="5">H5</option>
+              <option value="6">H6</option>
+            </select>
+            <button class="tb-btn" onclick="insertFormat('bold')" title="Bold"><b>B</b></button>
+            <button class="tb-btn" onclick="insertFormat('italic')" title="Italic"><i>I</i></button>
+            <button class="tb-btn" onclick="insertFormat('underline')" title="Underline"><u>U</u></button>
+            <button class="tb-btn" onclick="insertFormat('strikethrough')" title="Strike"><s>S</s></button>
+            <span class="tb-sep">|</span>
+            <button class="tb-btn" onclick="insertList('bullet')" title="Bullet List">• List</button>
+            <button class="tb-btn" onclick="insertList('numbered')" title="Numbered List">1. List</button>
+            <button class="tb-btn" onclick="insertList('task')" title="Task List">☑ Task</button>
+            <span class="tb-sep">|</span>
+            <button class="tb-btn" onclick="insertLink()" title="Link">🔗</button>
+            <button class="tb-btn" onclick="openImageGallery()" title="Image">🖼️</button>
+            <span class="tb-sep">|</span>
+            <div class="tb-dropdown">
+              <button class="tb-btn" onclick="toggleCodeMenu()">💻 Code ▾</button>
+              <div class="tb-dropdown-menu" id="codeMenu" style="display:none;">
+                <select id="codeLangSelect">
+                  <option value="python">Python</option>
+                  <option value="javascript">JavaScript</option>
+                  <option value="html">HTML</option>
+                  <option value="css">CSS</option>
+                  <option value="bash">Bash</option>
+                  <option value="sql">SQL</option>
+                  <option value="json">JSON</option>
+                  <option value="yaml">YAML</option>
+                  <option value="markdown">Markdown</option>
+                  <option value="">Plain</option>
+                </select>
+                <button class="btn btn-sm" onclick="insertCodeBlock()">Insert</button>
+              </div>
+            </div>
+            <div class="tb-dropdown">
+              <button class="tb-btn" onclick="toggleSpoilerMenu()">🔽 Spoiler ▾</button>
+              <div class="tb-dropdown-menu" id="spoilerMenu" style="display:none;">
+                <input type="text" id="spoilerTitle" placeholder="Spoiler title" style="width:150px;">
+                <label><input type="checkbox" id="spoilerClosed"> Collapsed by default</label>
+                <button class="btn btn-sm" onclick="insertSpoiler()">Insert</button>
+              </div>
+            </div>
+            <div class="tb-dropdown">
+              <button class="tb-btn" onclick="toggleAdmonMenu()">⚠️ Note ▾</button>
+              <div class="tb-dropdown-menu" id="admonMenu" style="display:none;">
+                <select id="admonType">
+                  <option value="warning">⚠️ Warning</option>
+                  <option value="danger">🚨 Danger</option>
+                  <option value="success">✅ Success</option>
+                  <option value="info">ℹ️ Info</option>
+                  <option value="tip">💡 Tip</option>
+                  <option value="question">❓ Question</option>
+                  <option value="quote">💬 Quote</option>
+                  <option value="note">📝 Note</option>
+                </select>
+                <input type="text" id="admonTitle" placeholder="Optional title">
+                <button class="btn btn-sm" onclick="insertAdmonition()">Insert</button>
+              </div>
+            </div>
+            <button class="tb-btn" onclick="insertTable()" title="Table">⊞ Table</button>
+            <button class="tb-btn" onclick="insertHRule()" title="Horizontal Rule">─ HR</button>
+            <span class="tb-sep">|</span>
+            <button class="btn btn-sm btn-success" onclick="saveArticle()" id="saveBtn">💾 Save</button>
+            <button class="btn btn-sm" onclick="cancelEdit()">✕ Cancel</button>
+          </div>
+
+          <!-- Split editor/preview -->
+          <div class="editor-split">
+            <div class="editor-pane">
+              <textarea id="markdownEditor" placeholder="Write your content here..."></textarea>
+            </div>
+            <div class="preview-pane">
+              <div id="markdownPreview" class="markdown-preview"></div>
+            </div>
+          </div>
+        </div>
+        <div id="editorPlaceholder" class="editor-placeholder">
+          <p>👈 Select an article to edit</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+{% include "includes/image_modal.html" %}
+{% include "includes/tag_modal.html" %}
+{% include "includes/icon_modal.html" %}
+{% include "includes/git_modal.html" %}
+
+<!-- ADD/EDIT MODALS (inline) -->
+<div id="projectModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3 id="projectModalTitle">Add Project</h3>
+    <div class="form-group"><label>Name</label><input id="projName" type="text" placeholder="My Project"></div>
+    <div class="form-group"><label>Slug</label><input id="projSlug" type="text" placeholder="my-project"></div>
+    <div class="form-group"><label>Description</label><textarea id="projDesc" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveProject()">Save</button>
+      <button class="btn" onclick="closeModal('projectModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="menuItemModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Add Menu Item</h3>
+    <div class="form-group"><label>Name</label><input id="menuItemName" type="text"></div>
+    <div class="form-group"><label>Slug</label><input id="menuItemSlug" type="text"></div>
+    <div class="form-group"><label>Parent</label><select id="menuItemParent"><option value="">None (root)</option></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveMenuItem()">Save</button>
+      <button class="btn" onclick="closeModal('menuItemModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="prefixModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Add Prefix</h3>
+    <div class="form-group"><label>Value (e.g. DRAFT)</label><input id="prefixValue" type="text" placeholder="DRAFT"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveNewPrefix()">Save</button>
+      <button class="btn" onclick="closeModal('prefixModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="suffixModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Add Suffix</h3>
+    <div class="form-group"><label>Value (e.g. v2)</label><input id="suffixValue" type="text" placeholder="v2"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="saveNewSuffix()">Save</button>
+      <button class="btn" onclick="closeModal('suffixModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="deleteArticleModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <h3>Delete Article</h3>
+    <p>Do you want to delete associated images?</p>
+    <div class="modal-actions">
+      <button class="btn btn-danger" onclick="confirmDeleteArticle(true)">Delete with images</button>
+      <button class="btn btn-warning" onclick="confirmDeleteArticle(false)">Keep images</button>
+      <button class="btn" onclick="closeModal('deleteArticleModal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox" style="display:none;" onclick="closeLightbox(event)">
+  <div class="lightbox-inner">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <button class="lb-nav lb-prev" onclick="lightboxNav(-1)">‹</button>
+    <img id="lightboxImg" src="" alt="">
+    <button class="lb-nav lb-next" onclick="lightboxNav(1)">›</button>
+    <div class="lb-caption" id="lbCaption"></div>
+    <div class="lb-controls">
+      <button onclick="lightboxZoom(1.2)">🔍+</button>
+      <button onclick="lightboxZoom(0.8)">🔍-</button>
+      <a id="lbDownload" download>⬇️ Download</a>
+    </div>
+  </div>
+</div>
+
+<script>
+// Pass user role to JS
+window.CMS_USER = { username: "{{ user.username }}", role: "{{ user.role }}" };
+</script>
+<script src="/static/js/editor.js"></script>
+<script src="/static/js/drag-drop.js"></script>
+<script src="/static/js/lightbox.js"></script>
+{% endblock %}

@@ -1,0 +1,21 @@
+<!-- ICON UPLOAD MODAL -->
+<div id="iconModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>🔷 Upload Icon</h3>
+      <button class="modal-close" onclick="closeModal('iconModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Icon Name</label>
+      <input type="text" id="iconUploadName" placeholder="e.g. warning-icon">
+    </div>
+    <div class="form-group">
+      <label>File</label>
+      <input type="file" id="iconUploadFile" accept="image/*">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="uploadIcon()">Upload</button>
+      <button class="btn" onclick="closeModal('iconModal')">Cancel</button>
+    </div>
+  </div>
+</div>

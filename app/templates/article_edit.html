@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Edit Article — {{ article.title }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/editor.css">
+{% endblock %}
+{% block body %}
+<div class="settings-page">
+  <div class="settings-header">
+    <h1>✏️ Edit: {{ article.title }}</h1>
+    <a href="/dashboard" class="btn">← Back to Dashboard</a>
+  </div>
+  <p>Use the dashboard editor for full editing capabilities.</p>
+</div>
+{% endblock %}

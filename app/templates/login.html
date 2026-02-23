@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Login — MkDocs CMS{% endblock %}
+{% block body %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-logo">
+            <h1>📝 MkDocs CMS</h1>
+            <p>Content Management System</p>
+        </div>
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="username">Username or Email</label>
+                <input type="text" id="username" name="username" placeholder="admin" required autocomplete="username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <div id="loginError" class="error-msg" style="display:none;"></div>
+            <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+                <span class="btn-text">Login</span>
+                <span class="btn-spinner" style="display:none;">⏳</span>
+            </button>
+        </form>
+    </div>
+</div>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const errDiv = document.getElementById('loginError');
+    btn.querySelector('.btn-text').style.display = 'none';
+    btn.querySelector('.btn-spinner').style.display = 'inline';
+    btn.disabled = true;
+    errDiv.style.display = 'none';
+
+    const fd = new FormData();
+    fd.append('username', document.getElementById('username').value);
+    fd.append('password', document.getElementById('password').value);
+
+    try {
+        const resp = await fetch('/api/auth/login', { method: 'POST', body: fd });
+        if (resp.ok) {
+            const data = await resp.json();
+            localStorage.setItem('access_token', data.access_token);
+            window.location.href = '/dashboard';
+        } else {
+            const err = await resp.json();
+            errDiv.textContent = err.detail || 'Invalid credentials';
+            errDiv.style.display = 'block';
+        }
+    } catch(ex) {
+        errDiv.textContent = 'Connection error';
+        errDiv.style.display = 'block';
+    } finally {
+        btn.querySelector('.btn-text').style.display = 'inline';
+        btn.querySelector('.btn-spinner').style.display = 'none';
+        btn.disabled = false;
+    }
+});
+</script>
+{% endblock %}

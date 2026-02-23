@@ -1,0 +1,20 @@
+<!-- GIT MODAL -->
+<div id="gitModal" class="modal" style="display:none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>🔀 Git Operations</h3>
+      <button class="modal-close" onclick="closeModal('gitModal')">✕</button>
+    </div>
+    <div class="git-status" id="gitStatusArea"></div>
+    <div class="git-actions">
+      <button class="btn btn-primary" onclick="gitPush()">🚀 Push to Git</button>
+      <button class="btn" onclick="gitPull()">⬇️ Pull from Git</button>
+      <button class="btn" onclick="gitStatus()">📊 Status</button>
+      <button class="btn" onclick="gitHistory()">📜 History</button>
+    </div>
+    <div id="gitOutput" class="git-output"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('gitModal')">Close</button>
+    </div>
+  </div>
+</div>
