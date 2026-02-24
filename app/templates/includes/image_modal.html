@@ -1,0 +1,22 @@
+<!-- IMAGE GALLERY MODAL -->
+<div id="imageModal" class="modal" style="display:none;">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h3>🖼️ Image Gallery</h3>
+      <button class="modal-close" onclick="closeModal('imageModal')">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="tab-btn active" onclick="switchImageTab('article')" id="tabArticle">Current Article</button>
+      <button class="tab-btn" onclick="switchImageTab('all')" id="tabAll">All Images</button>
+      <div style="flex:1;"></div>
+      <label class="btn btn-sm btn-primary">
+        📤 Upload
+        <input type="file" id="imageUploadInput" accept="image/*" style="display:none;" onchange="uploadImageFromGallery(this)">
+      </label>
+    </div>
+    <div id="imageGalleryGrid" class="image-grid"></div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('imageModal')">Close</button>
+    </div>
+  </div>
+</div>

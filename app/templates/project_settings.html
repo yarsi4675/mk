@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Project Settings — {{ project.name }}{% endblock %}
+{% block body %}
+<div class="settings-page">
+  <div class="settings-header">
+    <h1>⚙️ Project Settings: {{ project.name }}</h1>
+    <a href="/dashboard" class="btn">← Back to Dashboard</a>
+  </div>
+  <div class="settings-card">
+    <h2>General</h2>
+    <form id="projectSettingsForm">
+      <input type="hidden" id="settingsProjectId" value="{{ project.id }}">
+      <div class="form-group"><label>Name</label><input id="settingsName" type="text" value="{{ project.name }}"></div>
+      <div class="form-group"><label>Slug</label><input id="settingsSlug" type="text" value="{{ project.slug }}"></div>
+      <div class="form-group"><label>Description</label><textarea id="settingsDesc" rows="3">{{ project.description }}</textarea></div>
+      <h2>Git Settings</h2>
+      <div class="form-group"><label>Repository URL</label><input id="settingsRepoUrl" type="text" value="{{ project.repo_url }}"></div>
+      <div class="form-group"><label>Branch</label><input id="settingsBranch" type="text" value="{{ project.branch }}"></div>
+      <div class="form-group"><label>GitHub Token</label><input id="settingsToken" type="password" value="{{ project.git_token }}" placeholder="ghp_..."></div>
+      <div class="form-group"><label>SSH Key</label><textarea id="settingsSshKey" rows="4" placeholder="-----BEGIN OPENSSH PRIVATE KEY-----">{{ project.ssh_key }}</textarea></div>
+      <button type="button" class="btn btn-primary" onclick="saveProjectSettings()">💾 Save Settings</button>
+    </form>
+  </div>
+</div>
+<script>
+async function saveProjectSettings() {
+    const token = localStorage.getItem('access_token');
+    const id = document.getElementById('settingsProjectId').value;
+    const data = {
+        name: document.getElementById('settingsName').value,
+        slug: document.getElementById('settingsSlug').value,
+        description: document.getElementById('settingsDesc').value,
+        repo_url: document.getElementById('settingsRepoUrl').value,
+        branch: document.getElementById('settingsBranch').value,
+        git_token: document.getElementById('settingsToken').value,
+        ssh_key: document.getElementById('settingsSshKey').value,
+    };
+    const resp = await fetch(`/api/projects/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify(data)
+    });
+    if (resp.ok) { alert('Settings saved!'); } else { alert('Error saving settings'); }
+}
+</script>
+{% endblock %}
